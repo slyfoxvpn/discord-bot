@@ -1,63 +1,65 @@
 import os
 from dotenv import load_dotenv
-import discord
-import interactions
+import disnake
+from disnake.ext import commands
+from disnake import ui
 
 
-# Load .env
 load_dotenv()
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+TOKEN = os.getenv("BOT_TOKEN")
 
 
-# Init bot
-bot = interactions.Client(token=BOT_TOKEN)
+intents = disnake.Intents.default()
+intents.members = True
+intents.message_content = True
+
+
+bot = commands.Bot(command_prefix=commands.when_mentioned_or("/"), intents=intents)
 
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(interactions.ClientPresence(activities=[interactions.PresenceActivity(name=f"за вашей безопасностью в сети", type=interactions.PresenceActivityType.WATCHING)]))
-    print("Bot is ready.")
+    game = disnake.Activity(type=disnake.ActivityType.watching, name="за вашей безопасностью в сети")
+    await bot.change_presence(activity=game, status=disnake.Status.online)
+    print("Bot is ready!")
 
 
-# Ping command
-@bot.command(name="ping", description="This is a simple ping command.")
-async def ping(ctx: interactions.CommandContext):
-    await ctx.send("pong!")
+@bot.slash_command(name="ping", description="It is just a ping.")
+async def ping(inter):
+    await inter.response.send_message("Pong!")
+
+
+@bot.slash_command(name="test")
+async def test(inter):
+    # Get the role object
+    guild = inter.guild  # Assuming the command is used in a guild
+    role = disnake.utils.get(guild.roles, name="🧷 Community Contributor")  # Replace "TestRole" with the actual role name
     
-
-button =[
-    interactions.ActionRow(
-        components=[
-            interactions.Button(
-                style=interactions.ButtonStyle.PRIMARY,
-                label="Click me!",
-                custom_id="click_me",
-            ),
-            interactions.Button(
-                style=interactions.ButtonStyle.DANGER,
-                label="Do not click!",
-                custom_id="do_not_click",
-            ),
-        ]
-    )
-]
+    # Assign the role to the user
+    if role:
+        await inter.author.add_roles(role)
+        await inter.response.send_message(f"Role {role.name} assigned!")
+    else:
+        await inter.response.send_message("Role not found!")
 
 
-@bot.command(name="languages", description="Send choose-language mesage.")
-async def languages(ctx: interactions.CommandContext):
-    await ctx.send("Привет! | Hello!", components=button)
+@bot.slash_command(name="buttonscommand")
+async def buttonscommand(inter):
+    button = [
+        disnake.ui.Button(label="button1", style=disnake.ButtonStyle.primary, custom_id="button1"),
+        disnake.ui.Button(label="button2", style=disnake.ButtonStyle.primary, custom_id="button2")
+    ]
+    
+    await inter.response.send_message("some", components=button)
 
 
-@bot.component("click_me")
-async def click_me(ctx: interactions.ComponentContext):
-    await ctx.send("Clicked!")
+@bot.event
+async def on_button_click(inter):
+    # Check the custom ID of the clicked button
+    if inter.component.custom_id == "button1":
+        await inter.response.edit_message(content="Button 1 clicked!", components=[])
+    elif inter.component.custom_id == "button2":
+        await inter.response.edit_message(content="Button 2 clicked!", components=[])
 
 
-@bot.component("do_not_click")
-async def do_not_click(ctx: interactions.ComponentContext):
-    await ctx.send("You clicked the wrong button!")
-
-
-
-# Run the bot with your token
-bot.start()
+bot.run(TOKEN)
