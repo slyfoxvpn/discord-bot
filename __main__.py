@@ -32,9 +32,17 @@ class ChooseLanguageView(disnake.ui.View): # Create a class called MyView that s
         guild = inter.guild  # Assuming the command is used in a guild
         role = disnake.utils.get(guild.roles, name="Russian")  # Replace "TestRole" with the actual role name
 
-        await inter.author.add_roles(role)
+        roles = []
+        for i in range(0, len(inter.author.roles)):
+            roles.append(inter.author.roles[i].name)
 
-        await inter.response.send_message("Added to Russian.") # Send a message when the button is clicked
+        if "Russian" in roles:
+            await inter.author.remove_roles(role)
+            await inter.response.send_message("Remove Russian role.") # Send a message when the button is clicked
+        else:
+            await inter.author.add_roles(role)
+            await inter.response.send_message("Added Russian role.") # Send a message when the button is clicked
+
 
     @disnake.ui.button(label="English", style=disnake.ButtonStyle.green, emoji='🇺🇸') # Create a button with the label "😎 Click me!" with color Blurple
     async def button2_callback(self, button, inter):
@@ -42,9 +50,18 @@ class ChooseLanguageView(disnake.ui.View): # Create a class called MyView that s
         guild = inter.guild  # Assuming the command is used in a guild
         role = disnake.utils.get(guild.roles, name="English")  # Replace "TestRole" with the actual role name
         
-        await inter.author.add_roles(role)
+        roles = []
+        for i in range(0, len(inter.author.roles)):
+            roles.append(inter.author.roles[i].name)
 
-        await inter.response.send_message("Added to English.") # Send a message when the button is clicked
+        if "English" in roles:
+            await inter.author.remove_roles(role)
+            await inter.response.send_message("Remove English role.") # Send a message when the button is clicked
+        else:
+            await inter.author.add_roles(role)
+            await inter.response.send_message("Added English role.") # Send a message when the button is clicked
+
+
 
 
 @bot.slash_command(name="choose-language-message", description="При исползовании этой команды будет отправлено сообщение для выбора основного языка сервера.")
