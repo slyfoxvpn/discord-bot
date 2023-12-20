@@ -24,17 +24,29 @@ async def on_ready():
     print("Bot is ready!")
 
 
-class ChooseLanguageView(disnake.ui.View): # Create a class called MyView that subclasses discord.ui.View
+@bot.slash_command(name="choose-language-message", description="При исползовании этой команды будет отправлено сообщение для выбора основного языка сервера.")
+async def choose_language_message(inter):
+    buttons = [
+        disnake.ui.Button(label="Русский", style=disnake.ButtonStyle.primary, emoji='🇷🇺', custom_id="russian_button"),
+        disnake.ui.Button(label="English", style=disnake.ButtonStyle.green, emoji='🇺🇸', custom_id="english_button")
+    ]
 
-    @disnake.ui.button(label="Русский", style=disnake.ButtonStyle.primary, emoji='🇷🇺') # Create a button with the label "😎 Click me!" with color Blurple
-    async def button1_callback(self, button, inter):
+    await inter.response.send_message("Привет! Hello!", components=buttons)
 
-        guild = inter.guild  # Assuming the command is used in a guild
+
+@bot.event
+async def on_button_click(inter):
+    guild = inter.guild  # Assuming the command is used in a guild
+
+    # Get roles
+    roles = []
+    for i in range(0, len(inter.author.roles)):
+        roles.append(inter.author.roles[i].name)
+
+
+    # Check the custom ID of the clicked button
+    if inter.component.custom_id == "russian_button":
         role = disnake.utils.get(guild.roles, name="Russian")  # Replace "TestRole" with the actual role name
-
-        roles = []
-        for i in range(0, len(inter.author.roles)):
-            roles.append(inter.author.roles[i].name)
 
         if "Russian" in roles:
             await inter.author.remove_roles(role)
@@ -42,17 +54,9 @@ class ChooseLanguageView(disnake.ui.View): # Create a class called MyView that s
         else:
             await inter.author.add_roles(role)
             await inter.response.send_message("Added Russian role.") # Send a message when the button is clicked
-
-
-    @disnake.ui.button(label="English", style=disnake.ButtonStyle.green, emoji='🇺🇸') # Create a button with the label "😎 Click me!" with color Blurple
-    async def button2_callback(self, button, inter):
-
-        guild = inter.guild  # Assuming the command is used in a guild
+            
+    elif inter.component.custom_id == "english_button":
         role = disnake.utils.get(guild.roles, name="English")  # Replace "TestRole" with the actual role name
-        
-        roles = []
-        for i in range(0, len(inter.author.roles)):
-            roles.append(inter.author.roles[i].name)
 
         if "English" in roles:
             await inter.author.remove_roles(role)
@@ -60,13 +64,6 @@ class ChooseLanguageView(disnake.ui.View): # Create a class called MyView that s
         else:
             await inter.author.add_roles(role)
             await inter.response.send_message("Added English role.") # Send a message when the button is clicked
-
-
-
-
-@bot.slash_command(name="choose-language-message", description="При исползовании этой команды будет отправлено сообщение для выбора основного языка сервера.")
-async def choose_language_message(inter):
-    await inter.response.send_message("Привет! Hello!", view=ChooseLanguageView())
 
 
 # -- -- For testing below this line -- --
